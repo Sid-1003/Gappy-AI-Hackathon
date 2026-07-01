@@ -70,5 +70,3 @@ python app.py
 
 ---
 
-## 📱 Mobile Access
-When you run `python app.py`, the terminal outputs a **Mobile Network URL** (e.g., `http://192.168.1.50:8000`). Open this link on any mobile phone connected to the same Wi-Fi network for full mobile functionality!
