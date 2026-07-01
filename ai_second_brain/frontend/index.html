@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Second Brain - Personal Knowledge Assistant</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" id="sidebar">
+            <div class="brand">
+                <div class="logo-icon">🧠</div>
+                <div class="brand-text">
+                    <h2>SecondBrain<span class="ai-badge">AI</span></h2>
+                    <span class="subtitle">Personal Knowledge Hub</span>
+                </div>
+            </div>
+
+            <nav class="nav-menu">
+                <button class="nav-btn active" data-tab="dashboard">
+                    <span class="icon">📊</span> <span class="label">Dashboard</span>
+                </button>
+                <button class="nav-btn" data-tab="vault">
+                    <span class="icon">📚</span> <span class="label">Knowledge Vault</span>
+                </button>
+                <button class="nav-btn" data-tab="graph">
+                    <span class="icon">🕸️</span> <span class="label">Connection Map</span>
+                </button>
+                <button class="nav-btn" data-tab="action-center">
+                    <span class="icon">⚡</span> <span class="label">Action Studio</span>
+                </button>
+            </nav>
+
+            <div class="system-status-widget">
+                <div class="status-indicator online"></div>
+                <div class="status-info">
+                    <span class="status-title">Engine Active</span>
+                    <span class="status-db" id="dbEngineLabel">Database: Connecting...</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Top Header & Search Bar -->
+            <header class="top-header">
+                <button class="mobile-toggle" id="mobileToggle">☰</button>
+                <div class="search-wrapper">
+                    <div class="search-input-group">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="searchInput" placeholder="Search anything... try 'Deadlines', 'Hackathon', or 'AI Ideas'..." autocomplete="off">
+                        <button class="search-btn" id="searchBtn">AI Synthesize</button>
+                    </div>
+                    <div class="search-pills">
+                        <span class="pill" data-query="Deadlines">⏰ Deadlines</span>
+                        <span class="pill" data-query="Hackathon">🚀 Hackathon</span>
+                        <span class="pill" data-query="Ideas">💡 Ideas</span>
+                        <span class="pill" data-query="Links">🔗 Links</span>
+                        <span class="pill" data-query="Tasks">📋 Urgent Tasks</span>
+                    </div>
+                </div>
+
+                <div class="header-actions" style="display: flex; gap: 12px; align-items: center;">
+                    <button class="btn btn-secondary" id="runSecondBrainBtn" style="border: 1px solid var(--primary); background: rgba(99, 102, 241, 0.15); color: #a5b4fc; box-shadow: 0 0 10px rgba(99, 102, 241, 0.2);">🧠 Run AI Second Brain</button>
+                    <button class="btn btn-primary" id="openAddModalBtn">+ Capture Knowledge</button>
+                </div>
+            </header>
+
+            <!-- AI Synthesis Banner (Visible during search) -->
+            <section class="ai-synthesis-banner hidden" id="aiSynthesisBanner">
+                <div class="ai-icon">✨</div>
+                <div class="ai-content">
+                    <h4>AI Context Synthesis</h4>
+                    <p id="aiSynthesisText">Analyzing second brain records...</p>
+                </div>
+                <button class="close-banner" id="closeBannerBtn">✕</button>
+            </section>
+
+            <!-- TABS WORKSPACE -->
+            <div class="workspace-tab active" id="tab-dashboard">
+                <div class="dashboard-grid">
+                    <!-- Metrics Stats -->
+                    <div class="metric-card glass">
+                        <div class="metric-icon">📝</div>
+                        <div class="metric-data">
+                            <h3 id="statTotalItems">0</h3>
+                            <span>Total Captured Items</span>
+                        </div>
+                    </div>
+                    <div class="metric-card glass">
+                        <div class="metric-icon">⏳</div>
+                        <div class="metric-data">
+                            <h3 id="statDeadlines">0</h3>
+                            <span>Active Deadlines</span>
+                        </div>
+                    </div>
+                    <div class="metric-card glass">
+                        <div class="metric-icon">💡</div>
+                        <div class="metric-data">
+                            <h3 id="statIdeas">0</h3>
+                            <span>Ideas & Concepts</span>
+                        </div>
+                    </div>
+                    <div class="metric-card glass">
+                        <div class="metric-icon">🔗</div>
+                        <div class="metric-data">
+                            <h3 id="statLinks">0</h3>
+                            <span>Indexed Links</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Surface Context & Insights -->
+                <section class="section-container">
+                    <div class="section-header">
+                        <h2>🤖 AI Surface Context & Insights</h2>
+                        <span class="tag-badge">Live Context Analysis</span>
+                    </div>
+                    <div class="insights-grid" id="insightsGrid">
+                        <!-- Dynamically populated by JS -->
+                    </div>
+                </section>
+
+                <!-- Recent Captured Context -->
+                <section class="section-container">
+                    <div class="section-header">
+                        <h2>🕒 Recently Surfaced Notes</h2>
+                        <button class="btn-link" id="viewAllBtn">View Vault →</button>
+                    </div>
+                    <div class="items-grid" id="recentItemsGrid">
+                        <!-- Dynamically populated -->
+                    </div>
+                </section>
+            </div>
+
+            <!-- TAB 2: KNOWLEDGE VAULT -->
+            <div class="workspace-tab" id="tab-vault">
+                <div class="vault-controls glass">
+                    <div class="filter-group">
+                        <label>Type:</label>
+                        <select id="filterType">
+                            <option value="all">All Types</option>
+                            <option value="note">Notes</option>
+                            <option value="link">Links</option>
+                            <option value="idea">Ideas</option>
+                            <option value="task">Tasks</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Category:</label>
+                        <select id="filterCategory">
+                            <option value="all">All Categories</option>
+                            <option value="General">General</option>
+                            <option value="Hackathon">Hackathon</option>
+                            <option value="Project">Project</option>
+                            <option value="Research">Research</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="items-grid" id="vaultItemsGrid">
+                    <!-- Dynamically populated -->
+                </div>
+            </div>
+
+            <!-- TAB 3: CONNECTION MAP (GRAPH) -->
+            <div class="workspace-tab" id="tab-graph">
+                <div class="graph-container glass">
+                    <div class="graph-overlay">
+                        <h3>🕸️ Interactive Knowledge Graph</h3>
+                        <p>Visualizing relationships between your notes, ideas, tags, and resources.</p>
+                    </div>
+                    <canvas id="graphCanvas"></canvas>
+                </div>
+            </div>
+
+            <!-- TAB 4: ACTION STUDIO -->
+            <div class="workspace-tab" id="tab-action-center">
+                <div class="action-studio-container glass">
+                    <div class="studio-header">
+                        <h2>⚡ AI Action Studio</h2>
+                        <p>Turn raw notes and ideas into actionable drafts, decision matrices, and task lists.</p>
+                    </div>
+
+                    <div class="studio-workspace">
+                        <div class="studio-sidebar">
+                            <h4>1. Select Source Knowledge Items</h4>
+                            <div class="item-selection-list" id="studioSelectionList">
+                                <!-- Populated by JS -->
+                            </div>
+                            
+                            <h4>2. Choose Output Action</h4>
+                            <div class="action-options">
+                                <button class="action-opt-btn active" data-format="task_list">📋 Generate Task Breakdown</button>
+                                <button class="action-opt-btn" data-format="draft_blog">✍️ Draft Article / Post</button>
+                                <button class="action-opt-btn" data-format="executive_summary">📊 Executive Decision Brief</button>
+                                <button class="action-opt-btn" data-format="decision_matrix">⚖️ Decision Evaluation Matrix</button>
+                                <button class="action-opt-btn" data-format="formal_mail">✉️ Generate Formal Mail/Message</button>
+                            </div>
+                            
+                            <button class="btn btn-primary btn-block" id="generateActionBtn">✨ Run AI Synthesis Studio</button>
+                        </div>
+
+                        <div class="studio-output-area">
+                            <div class="output-header">
+                                <h3>Generated Actionable Document</h3>
+                                <button class="btn btn-secondary btn-sm" id="copyDocBtn">📋 Copy Document</button>
+                            </div>
+                            <pre class="markdown-view" id="actionOutputText">Select items from the left and click 'Run AI Synthesis Studio' to turn your notes into actionable outputs...</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ADD/EDIT KNOWLEDGE MODAL -->
+    <div class="modal-backdrop hidden" id="itemModal">
+        <div class="modal-content glass">
+            <div class="modal-header">
+                <h3 id="modalTitle">✨ Capture Knowledge</h3>
+                <button class="close-modal" id="closeModalBtn">✕</button>
+            </div>
+            <form id="itemForm">
+                <input type="hidden" id="itemId">
+                <div class="form-group">
+                    <label>Title *</label>
+                    <input type="text" id="inputTitle" required placeholder="e.g., Hackathon Pitch Submission Guidelines">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Type</label>
+                        <select id="inputType">
+                            <option value="note">Note</option>
+                            <option value="link">Link / Resource</option>
+                            <option value="idea">Idea / Concept</option>
+                            <option value="task">Actionable Task</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Category</label>
+                        <input type="text" id="inputCategory" placeholder="e.g. Hackathon, Project X">
+                    </div>
+                </div>
+                <div class="form-group" id="urlGroup">
+                    <label>URL (Optional for links)</label>
+                    <input type="url" id="inputUrl" placeholder="https://example.com/resource">
+                </div>
+                <div class="form-group">
+                    <label>Content / Notes *</label>
+                    <textarea id="inputContent" rows="5" required placeholder="Type notes, copy articles, paste ideas... AI will auto-extract deadlines and action items!"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Deadline / Date (Optional)</label>
+                        <input type="text" id="inputDeadline" placeholder="e.g., July 1, 2026 or Next Monday">
+                    </div>
+                    <div class="form-group">
+                        <label>Priority</label>
+                        <select id="inputPriority">
+                            <option value="Medium">Medium</option>
+                            <option value="High">High</option>
+                            <option value="Urgent">🔥 Urgent</option>
+                            <option value="Low">Low</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Tags (Comma separated)</label>
+                    <input type="text" id="inputTags" placeholder="e.g. hackathon, ai, deadline">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="cancelModalBtn">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save to Second Brain</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- READ / FULL NOTE DETAIL MODAL -->
+    <div class="modal-backdrop hidden" id="detailModal">
+        <div class="modal-content glass detail-modal-content">
+            <div class="modal-header">
+                <div class="detail-header-info">
+                    <span class="item-type-badge" id="detailBadge">NOTE</span>
+                    <h2 id="detailTitle">Note Title</h2>
+                </div>
+                <button class="close-modal" id="closeDetailModalBtn">✕</button>
+            </div>
+            
+            <div class="detail-body">
+                <div class="detail-meta-row" id="detailMetaRow">
+                    <!-- Dynamic badges: category, priority, deadline, url -->
+                </div>
+
+                <div class="detail-section" id="detailSummarySection">
+                    <h4>✨ AI Summary</h4>
+                    <p id="detailAiSummary" class="ai-summary-text"></p>
+                </div>
+
+                <div class="detail-section">
+                    <h4>📝 Full Content</h4>
+                    <div id="detailFullContent" class="full-content-box"></div>
+                </div>
+
+                <div class="detail-section" id="detailActionsSection">
+                    <h4>📋 Extracted Action Items</h4>
+                    <div id="detailExtractedActions" class="actions-content-box"></div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="deleteDetailBtn" style="color: var(--danger);">Delete Note</button>
+                <button type="button" class="btn btn-primary" id="closeDetailBtn">Close Reader</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- RUN AI SECOND BRAIN / COMBINED NOTES MODAL -->
+    <div class="modal-backdrop hidden" id="combineModal">
+        <div class="modal-content glass" style="max-width: 800px; width: 95%;">
+            <div class="modal-header">
+                <div class="detail-header-info">
+                    <span class="logo-icon" style="font-size: 20px; padding: 4px;">🧠</span>
+                    <h2>AI Linked Knowledge Synthesis</h2>
+                </div>
+                <button class="close-modal" id="closeCombineModalBtn">✕</button>
+            </div>
+            
+            <div class="detail-body" style="gap: 16px;">
+                <p style="font-size: 13.5px; color: var(--text-muted); line-height: 1.5; margin-bottom: 8px;">
+                    The Second Brain has analyzed your notes, found contextual overlaps, and linked similar concepts together into cohesive readables. Here are your synthesized knowledge clusters:
+                </p>
+                
+                <div id="combinedNotesClusters" style="display: flex; flex-direction: column; gap: 20px; max-height: 50vh; overflow-y: auto; padding-right: 4px;">
+                    <!-- Dynamically populated clusters -->
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="closeCombineBtn">Done Reading</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
